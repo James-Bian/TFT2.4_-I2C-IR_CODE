@@ -1,0 +1,14 @@
+".\Objects\AT24C02.obj",
+".\Objects\DS1302.obj",
+".\Objects\gui.obj",
+".\Objects\IIC.obj",
+".\Objects\IR.obj",
+".\Objects\lcd_drive.obj",
+".\Objects\main.obj",
+".\Objects\temp.obj",
+".\Objects\TIME.obj",
+".\Objects\touch.obj",
+".\Objects\UART.obj",
+".\Objects\STARTUP.obj" 
+TO ".\Objects\90C52" 
+PRINT(".\Listings\90C52.m51") RAMSIZE(256) 

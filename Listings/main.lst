@@ -1,0 +1,135 @@
+C51 COMPILER V9.54   MAIN                                                                  04/02/2016 02:16:15 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE c\main.c COMPACT OPTIMIZE(8,SPEED) BROWSE INCDIR(.\include) DEBUG OBJECT
+                    -EXTEND PRINT(.\Listings\main.lst) TABS(2) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          #include <REG52.H>
+   2          #include "lcd_drive.h"
+   3          #include "gui.h"
+   4          #include "DS1302.h"
+   5          #include "uart.h"
+   6          #include <stdio.h>
+   7          #include "ir.h"
+   8          #include "temp.h"
+   9          #include "touch.h"
+  10          #include "time.h"
+  11          #include "AT24C02.h"
+  12          
+  13          sbit Input_P10=P1^0;
+  14          
+  15          void main(void)
+  16          {   
+  17   1          long x, y;
+  18   1        
+  19   1          TFT_Init();
+  20   1          Uart_Init();
+  21   1          IrInit();
+  22   1          IIC_Init();
+  23   1          Ds1302Init();
+  24   1          Ds18b20Init();
+  25   1          Ds18b20ReadTemp();
+  26   1          Time0_Init();
+  27   1        
+  28   1          printf("TFT彩屏测试程序\r\n");
+  29   1        
+  30   1          TFT_ClearScreen(~BLACK);
+  31   1        
+  32   1          GUI_Write32CnChar(0, 0, "吴小慧", ~CYAN, ~0x0000);  
+  33   1          GUI_WriteASCII (0, 30 ,"RTC Reads:" , ~CYAN, ~BLACK);
+  34   1          Ds1302ReadTime(); 
+  35   1          GUI_TimeDisplay(0, 54 , ~CYAN, ~BLACK);   
+  36   1          GUI_WriteASCII (0, 78 ,"Temperature:" , ~CYAN, ~BLACK);
+  37   1          
+  38   1          GUI_TEMPERATUER_DISPLAY_16X24(0, 102, Ds18b20ReadTemp(), ~CYAN, ~BLACK);  
+  39   1          GUI_WriteASCII (0, 126 ,"IRcode:0x" , ~YELLOW, ~BLACK);
+  40   1          GUI_WriteASCII (0, 150 ,"AT24C:" , ~RED, ~BLACK);
+  41   1        //  GUI_ShowPicture(5, 146, 112, 150);  
+  42   1         do
+  43   1          { 
+  44   2            if(RTC_Timer_OK==1)
+  45   2            {
+  46   3              ET0=0;
+  47   3              RTC_Timer_OK=0;
+  48   3              Ds1302ReadTime(); 
+  49   3              GUI_TimeDisplay(0, 54 , ~CYAN, ~BLACK);     
+  50   3              printf("读取RTC时间\r\n");
+  51   3              ET0=1;       
+  52   3              
+  53   3            }
+  54   2            if(Temp_Timer_OK==1)
+C51 COMPILER V9.54   MAIN                                                                  04/02/2016 02:16:15 PAGE 2   
+
+  55   2             {
+  56   3              Temp_Timer_OK=0;
+  57   3              ET0=0;
+  58   3              GUI_TEMPERATUER_DISPLAY_16X24(0, 102, Ds18b20ReadTemp(), ~CYAN, ~BLACK);  
+  59   3              ET0=1;
+  60   3              printf("读取DS18B20传感器温度\r\n");        
+  61   3             }
+  62   2            if(IR_EVENT==1)
+  63   2             {
+  64   3              IR_EVENT=0;
+  65   3              GUI_IR_VALUE_DISPLAY_16X24(144, 126, IrValue[1],  ~YELLOW, ~BLACK); 
+  66   3              GUI_IR_VALUE_DISPLAY_16X24(176, 126, IrValue[0],  ~YELLOW, ~BLACK); 
+  67   3              GUI_IR_VALUE_DISPLAY_16X24(208, 126, IrValue[2],  ~YELLOW, ~BLACK); 
+  68   3              printf("接收到新的红外遥控按键码\r\n"); 
+  69   3             }
+  70   2            
+  71   2            if(IrValue[2]==0x07)
+  72   2            {
+  73   3              IrValue[2]=0;
+  74   3              AT24C02_Temp_Save();  
+  75   3            }
+  76   2                   
+  77   2            if(IrValue[2]==0x15)
+  78   2            {
+  79   3              IrValue[2]=0;
+  80   3              GUI_AT24C02_DISPLAY_16X24(96, 150,  ~RED, ~BLACK);    
+  81   3            } 
+  82   2            
+  83   2            if(TOUCH_PEN==0)
+  84   2              {
+  85   3              //--如果触摸跟显示发生偏移，可以根据显示AD值--//
+  86   3              //--调整下面公式里面的数值--//
+  87   3              TOUCH_XPT_ReadXY();
+  88   3              x = xpt_xy.x;
+  89   3              x = (x - 176) * 240 / 3676 ; 
+  90   3              y = xpt_xy.y;
+  91   3              y = (y - 160) * 319 / 3580;
+  92   3      
+  93   3              if (x > 239 )
+  94   3              {
+  95   4                x = 239;
+  96   4              }
+  97   3              if (y > 319)
+  98   3              {
+  99   4                y = 319;
+ 100   4              }
+ 101   3                GUI_Dot((uint)x , (uint)y, ~RED);
+ 102   3              }     
+ 103   2            
+ 104   2          }
+ 105   1          while(1);
+ 106   1      }
+ 107            
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    729    ----
+   CONSTANT SIZE    =    131    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----       8
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+C51 COMPILER V9.54   MAIN                                                                  04/02/2016 02:16:15 PAGE 3   
+
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

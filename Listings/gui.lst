@@ -1,0 +1,517 @@
+C51 COMPILER V9.54   GUI                                                                   04/02/2016 02:16:15 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE GUI
+OBJECT MODULE PLACED IN .\Objects\gui.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE c\gui.c COMPACT OPTIMIZE(8,SPEED) BROWSE INCDIR(.\include) DEBUG OBJECTE
+                    -XTEND PRINT(.\Listings\gui.lst) TABS(2) OBJECT(.\Objects\gui.obj)
+
+line level    source
+
+   1          #include"gui.h"
+   2          
+   3          
+   4          //---ºº×ÖµÄ×Ö¿âÍ·ÎÄ¼þ---//
+   5          #include"charcode.h"
+   6          
+   7          //---Èç¹ûÒªÏÔÊ¾Í¼Æ¬¾ÍÌí¼ÓÕâ¸öÍ·ÎÄ¼þ---//
+   8          #ifdef PICTURE_SHOW
+              
+              #include"picture.h"
+              
+              #endif
+  13          
+  14          /****************************************************************************
+  15          *º¯ÊýÃû£ºGUI_Dot
+  16          *Êä  Èë£ºx£ºµãµÄX×ø±ê£»
+  17          *      * y£ºµãµÄY×ø±ê
+  18          *      * color£ºµãµÄÑÕÉ«
+  19          *Êä  ³ö£º
+  20          *¹¦  ÄÜ£º¸øµ¥¸öÏñËØÍ¿ÉÏÑÕÉ«¡£
+  21          ****************************************************************************/   
+  22          
+  23          void GUI_Dot(uint x, uint y, uint color)
+  24          {  
+  25   1        uchar i;
+  26   1      
+  27   1        TFT_SetWindow(x, y, x+2, y+2);  //µ¥¸öÏñËØ
+  28   1      
+  29   1        for(i=0; i<9; i++)
+  30   1        {
+  31   2          TFT_WriteData(color);
+  32   2        }
+  33   1      }
+  34          
+  35          ///****************************************************************************
+  36          //*º¯ÊýÃû£ºGUI_Box
+  37          //*Êä  Èë£ºsx£ºÆðÊ¼X×ø±ê, sy£ºÆäÊµY×ø±ê, 
+  38          //*      * ex£ºÖÕÖ¹X×ø±ê, ey£ºÖÕÖ¹Y×ø±ê,
+  39          //*      * color£º·½¿òµÄÑÕÉ«
+  40          //*Êä  ³ö£º
+  41          //*¹¦  ÄÜ£º¸øÒ»¸öÇøÓòÍ¿ÉÏÑÕÉ«¡£
+  42          //****************************************************************************/   
+  43          //void GUI_Box(uint sx, uint sy, uchar ex, uint ey, uint color)
+  44          //{ 
+  45          //  uint temp;   
+  46          //  TFT_SetWindow(sx, sy, ex, ey); 
+  47          //  sx = ex - sx + 1;
+  48          //  sy = ey - sy + 1;
+  49          //  while (sx--)
+  50          //  {
+  51          //    temp = sy;
+  52          //    while (temp--)
+  53          //    { 
+  54          //      TFT_WriteData(color);
+C51 COMPILER V9.54   GUI                                                                   04/02/2016 02:16:15 PAGE 2   
+
+  55          //    }
+  56          //  }
+  57          //}
+  58          
+  59          /****************************************************************************
+  60          *º¯ÊýÃû£ºGUI_Line 
+  61          *Êä  Èë£ºxStart£ºÏßµÄÆðÊ¼X×ø±ê,
+  62          *      * yStart£ºÏßµÄÆäÊµY×ø±ê,
+  63          *      * xEnd£ºÏßµÄÖÕÖ¹X×ø±ê,
+  64          *      * yEnd£ºÏßµÄÖÕÖ¹Y×ø±ê,
+  65          *      * color£ºÏßÌõµÄÑÕÉ«
+  66          *Êä  ³ö£º
+  67          *¹¦  ÄÜ£º»­Ò»ÌõÖ±Ïß
+  68          ****************************************************************************/   
+  69          
+  70          void GUI_Line(uint xStart, uint yStart, uchar xEnd, uint yEnd, uint color)
+  71          {
+  72   1        uint t;  
+  73   1        int xerr = 0, yerr = 0, delta_x, delta_y, distance;  
+  74   1        int incx, incy;  
+  75   1        uint row, col;  
+  76   1        delta_x = xEnd - xStart;//¼ÆËã×ø±êÔöÁ¿  
+  77   1        delta_y = yEnd - yStart;  
+  78   1        col = xStart;  
+  79   1        row = yStart;  
+  80   1        if (delta_x > 0)
+  81   1        {
+  82   2          incx=1;//ÉèÖÃµ¥²½·½Ïò
+  83   2        }     
+  84   1        else    
+  85   1        {  
+  86   2            if (delta_x == 0)
+  87   2          {
+  88   3            incx = 0;//´¹Ö±Ïß 
+  89   3          }      
+  90   2            else 
+  91   2            {
+  92   3              incx = -1;
+  93   3              delta_x = -delta_x;
+  94   3            }  
+  95   2        }  
+  96   1        if (delta_y > 0)
+  97   1        {
+  98   2          incy = 1;
+  99   2        }   
+ 100   1        else  
+ 101   1        {  
+ 102   2            if (delta_y == 0)
+ 103   2          {
+ 104   3            incy = 0;//Ë®Æ½Ïß  
+ 105   3          } 
+ 106   2            else 
+ 107   2          {
+ 108   3            incy = -1;
+ 109   3            delta_y = -delta_y;
+ 110   3          }  
+ 111   2        }  
+ 112   1        if (delta_x > delta_y)
+ 113   1        { 
+ 114   2          distance = delta_x;//Ñ¡È¡»ù±¾ÔöÁ¿×ø±êÖá  
+ 115   2        }
+ 116   1        else
+C51 COMPILER V9.54   GUI                                                                   04/02/2016 02:16:15 PAGE 3   
+
+ 117   1        {
+ 118   2          distance = delta_y; 
+ 119   2        }   
+ 120   1        for (t=0; t<=distance+1; t++)  
+ 121   1        {                                     //»­ÏßÊä³ö  
+ 122   2            GUI_Dot(col, row, color);
+ 123   2            xerr += delta_x;  
+ 124   2            yerr += delta_y;  
+ 125   2            if(xerr > distance)  
+ 126   2            {  
+ 127   3                xerr -= distance;  
+ 128   3                col += incx;  
+ 129   3            }  
+ 130   2            if(yerr > distance)  
+ 131   2            {  
+ 132   3                yerr -= distance;  
+ 133   3                row += incy;  
+ 134   3            }  
+ 135   2        }  
+ 136   1      }
+ 137          
+ 138          /****************************************************************************
+ 139          *º¯ÊýÃû£ºGUI_WriteCnChar 
+ 140          *Êä  Èë£ºx£ºÏÔÊ¾ÆðÊ¼X×ø±ê
+ 141          *      * y£ºÏÔÊ¾ÆðÊ¼Y×ø±ê
+ 142          *      * *cn£ºÒªÏÔÊ¾µÄ×Ö·û´®
+ 143          *      * wordColor£º×ÖÌåµÄÑÕÉ«
+ 144          *      * backColor£º±³¾°ÑÕÉ«
+ 145          *Êä  ³ö£º
+ 146          *¹¦  ÄÜ£ºÐ´¶þºÅ¿¬Ìåºº×Ö
+ 147          ****************************************************************************/   
+ 148          
+ 149          #ifdef CHAR32_SHOW
+ 150          
+ 151          void GUI_Write32CnChar(uint x, uint y, uchar *cn, uint wordColor, uint backColor)  
+ 152          {  
+ 153   1        uchar i, j, wordNum;
+ 154   1        uint color;
+ 155   1        while (*cn != '\0')
+ 156   1        {
+ 157   2          TFT_SetWindow(x, y, x+31, y+28);
+ 158   2          for (wordNum=0; wordNum<20; wordNum++)
+ 159   2          { //wordNumÉ¨Ãè×Ö¿âµÄ×ÖÊý
+ 160   3            if ((CnChar32x29[wordNum].Index[0]==*cn)
+ 161   3                 &&(CnChar32x29[wordNum].Index[1]==*(cn+1)))
+ 162   3            {
+ 163   4              for(i=0; i<116; i++) 
+ 164   4              { //MSKµÄÎ»Êý
+ 165   5                color=CnChar32x29[wordNum].Msk[i];
+ 166   5                for(j=0;j<8;j++) 
+ 167   5                {
+ 168   6                  if((color&0x80)==0x80)
+ 169   6                  {
+ 170   7                    TFT_WriteData(wordColor);
+ 171   7                  }             
+ 172   6                  else
+ 173   6                  {
+ 174   7                    TFT_WriteData(backColor);
+ 175   7                  } 
+ 176   6                  color<<=1;
+ 177   6                }//for(j=0;j<8;j++)½áÊø
+ 178   5              }    
+C51 COMPILER V9.54   GUI                                                                   04/02/2016 02:16:15 PAGE 4   
+
+ 179   4            }
+ 180   3          } //for (wordNum=0; wordNum<20; wordNum++)½áÊø  
+ 181   2          cn += 2;
+ 182   2          x += 32;
+ 183   2        }
+ 184   1      }
+ 185          #endif
+ 186          
+ 187          /****************************************************************************
+ 188          *º¯ÊýÃû£ºGUI_WriteEnChar 
+ 189          *Êä  Èë£ºx£ºÏÔÊ¾ÆðÊ¼X×ø±ê
+ 190          *      * y£ºÏÔÊ¾ÆðÊ¼Y×ø±ê
+ 191          *      * *cn£ºÒªÏÔÊ¾µÄ×Ö·û´®
+ 192          *      * wordColor£º×ÖÌåµÄÑÕÉ«
+ 193          *      * backColor£º±³¾°ÑÕÉ«
+ 194          *Êä  ³ö£º
+ 195          *¹¦  ÄÜ£ºÐ´ËÄºÅ×Ö×ÖÄ¸
+ 196          ****************************************************************************/   
+ 197          #ifdef CHAR14_SHOW
+              
+              void GUI_Write14CnChar(uint x,uint y,uchar *cn,uint wordColor,uint backColor)  
+              {  
+                uchar i, j, wordNum;
+                uint color;
+                while (*cn != '\0')
+                {
+                  TFT_SetWindow(x, y, x+23, y+18);
+                  for (wordNum=0; wordNum<20; wordNum++)
+                  { //wordNumÉ¨Ãè×Ö¿âµÄ×ÖÊý
+                    if ((CnChar19x24[wordNum].Index[0]==*cn)
+                         &&(CnChar19x24[wordNum].Index[1]==*(cn+1)))
+                    {
+                      for(i=0; i<57; i++) 
+                      { //MSKµÄÎ»Êý
+                        color=CnChar19x24[wordNum].Msk[i];
+                        for(j=0;j<8;j++) 
+                        {
+                          if((color&0x80)==0x80)
+                          {
+                            TFT_WriteData(wordColor);
+                          }             
+                          else
+                          {
+                            TFT_WriteData(backColor);
+                          } 
+                          color<<=1;
+                        }//for(j=0;j<8;j++)½áÊø
+                      }    
+                    }
+                  } //for (wordNum=0; wordNum<20; wordNum++)½áÊø  
+                  cn += 2;
+                  x += 24;
+                }
+              }
+              
+              #endif 
+ 235          /****************************************************************************
+ 236          *º¯ÊýÃû£ºGUI_WriteASCII 
+ 237          *Êä  Èë£ºx£ºÏÔÊ¾ÆðÊ¼X×ø±ê
+ 238          *      * y£ºÏÔÊ¾ÆðÊ¼Y×ø±ê
+ 239          *      * *p£ºÒªÏÔÊ¾µÄ×Ö·û´®
+ 240          *      * wordColor£º×ÖÌåµÄÑÕÉ«
+C51 COMPILER V9.54   GUI                                                                   04/02/2016 02:16:15 PAGE 5   
+
+ 241          *      * backColor£º±³¾°ÑÕÉ«
+ 242          *Êä  ³ö£º
+ 243          *¹¦  ÄÜ£ºÐ´16X24µÄASCII×Ö·û
+ 244          ****************************************************************************/   
+ 245          
+ 246          #ifdef USE_ASCII
+ 247          
+ 248          void GUI_WriteASCII(uint x, uint y, uchar *p, uint wordColor, uint backColor)
+ 249          {
+ 250   1        uchar j, wordByte,wordNum;
+ 251   1        uint color;
+ 252   1        while(*p != '\0')
+ 253   1        {
+ 254   2          wordNum = *p - 32;
+ 255   2          TFT_SetWindow(x,y,x+15, y+23);
+ 256   2          for (wordByte=0; wordByte<48; wordByte++)
+ 257   2          {
+ 258   3            color = ASCII16x24[wordNum][wordByte];
+ 259   3            for (j=0; j<8; j++) 
+ 260   3            {
+ 261   4              if ((color&0x80) == 0x80)
+ 262   4              {
+ 263   5                TFT_WriteData(wordColor);
+ 264   5              }             
+ 265   4              else
+ 266   4              {
+ 267   5                TFT_WriteData(backColor);
+ 268   5              }   
+ 269   4              color <<= 1;
+ 270   4            }
+ 271   3          }
+ 272   2          p++;
+ 273   2          x +=16;
+ 274   2        }
+ 275   1      }
+ 276          #endif
+ 277          
+ 278          /****************************************************************************
+ 279          *º¯ÊýÃû£ºGUI_WriteASCII 
+ 280          *Êä  Èë£ºx£ºÏÔÊ¾ÆðÊ¼X×ø±ê
+ 281          *      * y£ºÏÔÊ¾ÆðÊ¼Y×ø±ê
+ 282          *      * p£ºÒªÏÔÊ¾µÄ×Ö·û
+ 283          *      * wordColor£º×ÖÌåµÄÑÕÉ«
+ 284          *      * backColor£º±³¾°ÑÕÉ«
+ 285          *Êä  ³ö£º
+ 286          *¹¦  ÄÜ£ºÐ´16X24µÄASCII×Ö·û
+ 287          ****************************************************************************/   
+ 288          
+ 289          
+ 290          void GUI_WriteASCII_SINGLE(uint x, uint y, uchar p, uint wordColor, uint backColor)
+ 291          {
+ 292   1        uchar j, wordByte,wordNum;
+ 293   1        uint color; 
+ 294   1        
+ 295   1          wordNum = p - 32;
+ 296   1          TFT_SetWindow(x,y,x+15, y+23);
+ 297   1          for (wordByte=0; wordByte<48; wordByte++)
+ 298   1          {
+ 299   2            color = ASCII16x24[wordNum][wordByte];
+ 300   2            for (j=0; j<8; j++) 
+ 301   2            {
+ 302   3              if ((color&0x80) == 0x80)
+C51 COMPILER V9.54   GUI                                                                   04/02/2016 02:16:15 PAGE 6   
+
+ 303   3              {
+ 304   4                TFT_WriteData(wordColor);
+ 305   4              }             
+ 306   3              else
+ 307   3              {
+ 308   4                TFT_WriteData(backColor);
+ 309   4              }   
+ 310   3              color <<= 1;
+ 311   3            }
+ 312   2          } 
+ 313   1        
+ 314   1      }
+ 315          
+ 316          
+ 317          /****************************************************************************
+ 318          *º¯ÊýÃû£ºGUI_ShowPicture 
+ 319          *Êä  Èë£ºx£ºÏÔÊ¾ÆðÊ¼X×ø±ê
+ 320          *      * y£ºÏÔÊ¾ÆðÊ¼Y×ø±ê
+ 321          *      * wide£ºÍ¼Æ¬µÄ¿í¶È
+ 322          *      * high£ºÍ¼Æ¬µÄ¸ß¶È
+ 323          *Êä  ³ö£º
+ 324          *¹¦  ÄÜ£º»­Ò»ÌõÖ±Ïß
+ 325          ****************************************************************************/   
+ 326          #ifdef PICTURE_SHOW
+              
+              void GUI_ShowPicture(uint x, uint y, uchar wide, uint high)
+              {
+                uint temp = 0, tmp = 0, num = 0;
+                TFT_SetWindow(x, y, x+wide-1, y+high-1);
+                num = wide * high * 2;
+                do
+                {  
+                  temp = pic[tmp + 1];
+                  temp = temp << 8;
+                  temp = temp | pic[tmp];
+                  TFT_WriteData(~temp);             //ÖðµãÏÔÊ¾
+                  tmp += 2;
+                }
+                while(tmp < num); 
+              }
+              
+              #endif
+ 345          
+ 346          #ifdef TIME_DISPLAY
+ 347          
+ 348          /****************************************************************************
+ 349          *º¯ÊýÃû£ºGUI_TimeDisplay 
+ 350          *Êä  Èë£ºx£ºÏÔÊ¾ÆðÊ¼X×ø±ê
+ 351          *      * y£ºÏÔÊ¾ÆðÊ¼Y×ø±ê
+ 352          *      * Time_wordColor£ºÎÄ×ÖÑÕÉ«
+ 353          *      * Time_backColor£ºÎÄ×Ö±³¾°É«
+ 354          *Êä  ³ö£º
+ 355          *¹¦  ÄÜ£ºÖ¸¶¨Î»ÖÃÏÔÊ¾RTCÊ±¼ä
+ 356          ****************************************************************************/  
+ 357          void GUI_TimeDisplay(uint x_Start, uint y_start,uint Time_wordColor, uint Time_backColor)
+ 358           {
+ 359   1         GUI_WriteASCII(x_Start, y_start, HOUR, Time_wordColor, Time_backColor);
+ 360   1         GUI_WriteASCII(x_Start+32, y_start, ":", Time_wordColor, Time_backColor);
+ 361   1         GUI_WriteASCII(x_Start+48, y_start, MINUTE, Time_wordColor, Time_backColor);
+ 362   1         GUI_WriteASCII(x_Start+80, y_start, ":", Time_wordColor, Time_backColor);
+ 363   1         GUI_WriteASCII(x_Start+96, y_start, SECOND, Time_wordColor, Time_backColor);
+ 364   1       }
+C51 COMPILER V9.54   GUI                                                                   04/02/2016 02:16:15 PAGE 7   
+
+ 365           
+ 366           /****************************************************************************
+ 367          *º¯ÊýÃû£ºGUI_IR_VALUE_DISPLAY 
+ 368          *Êä  Èë£ºx£ºÏÔÊ¾ÆðÊ¼X×ø±ê
+ 369          *      * y£ºÏÔÊ¾ÆðÊ¼Y×ø±ê
+ 370          *      * Time_wordColor£ºÎÄ×ÖÑÕÉ«
+ 371          *      * Time_backColor£ºÎÄ×Ö±³¾°É«
+ 372          *Êä  ³ö£º
+ 373          *¹¦  ÄÜ£ºÖ¸¶¨Î»ÖÃÏÔÊ¾IR¼üÖµ
+ 374          ****************************************************************************/ 
+ 375          void GUI_IR_VALUE_DISPLAY_16X24(uint x, uint y, uchar IRcode, uint wordColor, uint backColor) //Ö¸¶¨Î»ÖÃÏÔ
+             -Ê¾IR¼üÖµ
+ 376          {
+ 377   1        uchar IrValueH,IrValueL,temp;
+ 378   1        IrValueH=IRcode>>4;     //¸ßÎ»
+ 379   1        IrValueL=IRcode&0x0F;   //µÍÎ»
+ 380   1        if(IrValueH>9)
+ 381   1        {
+ 382   2            temp=0x37+IrValueH; //½«ÊýÖµ×ª»»Îª¸ÃÏÔÊ¾µÄASCIIÂë
+ 383   2            IrValueH=temp;
+ 384   2        }
+ 385   1        else
+ 386   1          {
+ 387   2            temp=0x30+IrValueH; //½«ÊýÖµ×ª»»Îª¸ÃÏÔÊ¾µÄASCIIÂë
+ 388   2            IrValueH=temp;
+ 389   2          } 
+ 390   1        if(IrValueL>9)
+ 391   1          {
+ 392   2            temp=0x37+IrValueL; //½«ÊýÖµ×ª»»Îª¸ÃÏÔÊ¾µÄASCIIÂë
+ 393   2            IrValueL=temp;
+ 394   2          }
+ 395   1        else
+ 396   1          {
+ 397   2            temp=0x30+IrValueL; //½«ÊýÖµ×ª»»Îª¸ÃÏÔÊ¾µÄASCIIÂë
+ 398   2            IrValueL=temp;
+ 399   2          } 
+ 400   1        
+ 401   1        GUI_WriteASCII_SINGLE(x,    y, IrValueH, wordColor, backColor); //ÏÔÊ¾¸ßÎ»£»
+ 402   1        GUI_WriteASCII_SINGLE(x+16, y, IrValueL, wordColor, backColor); //ÏÔÊ¾¸ßÎ»£»  
+ 403   1      }   
+ 404          #endif
+ 405          
+ 406          void GUI_TEMPERATUER_DISPLAY_16X24(uint x, uint y, int temp, uint wordColor, uint backColor)  //ÏÔÊ¾ÎÂ¶È
+ 407          {
+ 408   1        unsigned char datas[] = {0, 0, 0, 0, 0}; //¶¨ÒåÊý×é
+ 409   1        unsigned char Temp_Symbol;
+ 410   1        float tp; 
+ 411   1           
+ 412   1        if(temp< 0)           //µ±ÎÂ¶ÈÖµÎª¸ºÊý
+ 413   1          {
+ 414   2          //ÒòÎª¶ÁÈ¡µÄÎÂ¶ÈÊÇÊµ¼ÊÎÂ¶ÈµÄ²¹Âë£¬ËùÒÔ¼õ1£¬ÔÙÈ¡·´Çó³öÔ­Âë
+ 415   2          Temp_Symbol='-';
+ 416   2          temp=temp-1;
+ 417   2          temp=~temp;
+ 418   2          tp=temp;
+ 419   2          temp=tp*0.0625*100+0.5; 
+ 420   2          //ÁôÁ½¸öÐ¡Êýµã¾Í*100£¬+0.5ÊÇËÄÉáÎåÈë£¬ÒòÎªCÓïÑÔ¸¡µãÊý×ª»»ÎªÕûÐÍµÄÊ±ºò°ÑÐ¡Êýµã
+ 421   2          //ºóÃæµÄÊý×Ô¶¯È¥µô£¬²»¹ÜÊÇ·ñ´óÓÚ0.5£¬¶ø+0.5Ö®ºó´óÓÚ0.5µÄ¾ÍÊÇ½ø1ÁË£¬Ð¡ÓÚ0.5µÄ¾Í
+ 422   2          //ËãÓÉÏ0.5£¬»¹ÊÇÔÚÐ¡ÊýµãºóÃæ¡£
+ 423   2       
+ 424   2          }
+ 425   1        else   //ÎÂ¶ÈÎªÕýÊý
+C51 COMPILER V9.54   GUI                                                                   04/02/2016 02:16:15 PAGE 8   
+
+ 426   1          { 
+ 427   2          Temp_Symbol='+';      
+ 428   2          tp=temp;//ÒòÎªÊý¾Ý´¦ÀíÓÐÐ¡ÊýµãËùÒÔ½«ÎÂ¶È¸³¸øÒ»¸ö¸¡µãÐÍ±äÁ¿
+ 429   2          //Èç¹ûÎÂ¶ÈÊÇÕýµÄÄÇÃ´£¬ÄÇÃ´ÕýÊýµÄÔ­Âë¾ÍÊÇ²¹ÂëËü±¾Éí
+ 430   2          temp=tp*0.0625*100+0.5; 
+ 431   2          //ÁôÁ½¸öÐ¡Êýµã¾Í*100£¬+0.5ÊÇËÄÉáÎåÈë£¬ÒòÎªCÓïÑÔ¸¡µãÊý×ª»»ÎªÕûÐÍµÄÊ±ºò°ÑÐ¡Êýµã
+ 432   2          //ºóÃæµÄÊý×Ô¶¯È¥µô£¬²»¹ÜÊÇ·ñ´óÓÚ0.5£¬¶ø+0.5Ö®ºó´óÓÚ0.5µÄ¾ÍÊÇ½ø1ÁË£¬Ð¡ÓÚ0.5µÄ¾Í
+ 433   2          //Ëã¼ÓÉÏ0.5£¬»¹ÊÇÔÚÐ¡ÊýµãºóÃæ¡£
+ 434   2        }
+ 435   1        datas[0] = temp / 10000;
+ 436   1        datas[1] = temp % 10000 / 1000;
+ 437   1        datas[2] = temp % 1000 / 100;
+ 438   1        datas[3] = temp % 100 / 10;     //Ð¡ÊýµÚ1Î»
+ 439   1        datas[4] = temp % 10;           //Ð¡ÊýµÚ2Î»
+ 440   1      
+ 441   1        GUI_WriteASCII_SINGLE(x,       y, Temp_Symbol , wordColor, backColor);   //ÏÔÊ¾·ûºÅ£»
+ 442   1        //GUI_WriteASCII_SINGLE(x+16,    y, datas[0]+'0', wordColor, backColor); //ÏÔÊ¾°ÙÎ»
+ 443   1        GUI_WriteASCII_SINGLE(x+16,    y, datas[1]+'0', wordColor, backColor);   //ÏÔÊ¾Ê®Î»
+ 444   1        GUI_WriteASCII_SINGLE(x+32,    y, datas[2]+'0', wordColor, backColor);   //ÏÔÊ¾¸öÎ»
+ 445   1        GUI_WriteASCII_SINGLE(x+48,    y,          '.', wordColor, backColor);   //ÏÔÊ¾µãºÅ
+ 446   1        GUI_WriteASCII_SINGLE(x+64,    y, datas[3]+'0', wordColor, backColor);   //ÏÔÊ¾Ð¡Êýµã
+ 447   1        GUI_WriteASCII_SINGLE(x+80,    y, datas[4]+'0', wordColor, backColor);   //ÏÔÊ¾Ð¡Êýµã 
+ 448   1      }
+ 449          
+ 450          #if 1
+ 451          void GUI_AT24C02_DISPLAY_16X24(uint x, uint y, uint wordColor, uint backColor) 
+ 452          {
+ 453   1        int tem;
+ 454   1        if(IIC_ReceiveDataFromDevice(AT24C02_READ,1))
+ 455   1          {
+ 456   2           tem=IIC_DATA;
+ 457   2          }
+ 458   1        //else printf("read erro");
+ 459   1          if(IIC_ReceiveDataFromDevice(AT24C02_READ,2))
+ 460   1          {
+ 461   2           tem=(tem<<8)+IIC_DATA;
+ 462   2          }   
+ 463   1        //else printf("read erro");
+ 464   1        GUI_TEMPERATUER_DISPLAY_16X24(x, y, tem, wordColor, backColor); 
+ 465   1      }
+ 466          
+ 467          #else
+              void GUI_AT24C02_DISPLAY_16X24(uint x, uint y, uint wordColor, uint backColor) 
+              {
+                int tem;
+                tem=IIC_Read_Data_From_Address(1);
+                tem=(tem<<8)+IIC_Read_Data_From_Address(2);
+                GUI_TEMPERATUER_DISPLAY_16X24(x, y, tem, wordColor, backColor); 
+              }
+              
+              #endif
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   2136    ----
+   CONSTANT SIZE    =   5559    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----     129
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+C51 COMPILER V9.54   GUI                                                                   04/02/2016 02:16:15 PAGE 9   
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

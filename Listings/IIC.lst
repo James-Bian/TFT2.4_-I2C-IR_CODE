@@ -1,0 +1,303 @@
+C51 COMPILER V9.54   IIC                                                                   04/02/2016 02:16:15 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE IIC
+OBJECT MODULE PLACED IN .\Objects\IIC.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE c\IIC.c COMPACT OPTIMIZE(8,SPEED) BROWSE INCDIR(.\include) DEBUG OBJECTE
+                    -XTEND PRINT(.\Listings\IIC.lst) TABS(2) OBJECT(.\Objects\IIC.obj)
+
+line level    source
+
+   1          #include "IIC.H"
+   2          
+   3          bit   IIC_Ack_State;
+   4          uchar IIC_DATA;
+   5          
+   6          void Delay_5ms(void)
+   7          {
+   8   1        unsigned char i, j;
+   9   1      
+  10   1        i = 59;
+  11   1        j = 90;
+  12   1        do
+  13   1        {
+  14   2          while (--j);
+  15   2        } while (--i);
+  16   1      
+  17   1      }
+  18          
+  19          /*
+  20          //*****************************************************************
+  21          //        To get a time delay
+  22          //Description £ºTo get a time delay
+  23          //Argument    £ºm decides the different time delay
+  24          //Returns     £ºnone
+  25          //Note        : The delay time depens on the system clock£¬the 
+  26                          delay time varies when the clock changes
+  27          //*****************************************************************
+  28          */
+  29          void Time_Delay(void)
+  30          {
+  31   1        _nop_();
+  32   1        _nop_();
+  33   1        _nop_();
+  34   1      }
+  35          
+  36          /*
+  37          //*****************************************************************
+  38          //        Initial the IIC bus
+  39          //Description £ºInitial the IIC bus
+  40          //Argument    £ºnone
+  41          //Returns     £ºnone
+  42          //Note        : none
+  43          //*****************************************************************
+  44          */
+  45          void IIC_Init(void)
+  46          {
+  47   1        IIC_SCL = 1;
+  48   1        IIC_SDA = 1;
+  49   1      } 
+  50          
+  51          
+  52          /*
+  53          //*****************************************************************
+  54          //        Make a start signal for the bus
+C51 COMPILER V9.54   IIC                                                                   04/02/2016 02:16:15 PAGE 2   
+
+  55          //Description £ºDeclaim the start of data transformation
+  56          //Argument    £ºnone
+  57          //Returns     £ºnone
+  58          //Note        : none
+  59          //*****************************************************************
+  60          */
+  61          
+  62          void IIC_Start(void)
+  63          {
+  64   1        IIC_SCL = 1;
+  65   1        IIC_SDA = 1;
+  66   1        Time_Delay();
+  67   1        IIC_SDA = 0;
+  68   1        Time_Delay();
+  69   1        IIC_SCL = 0;                 //ready for the SDA to change
+  70   1        Time_Delay();
+  71   1      }
+  72          
+  73          /*
+  74          //*****************************************************************
+  75          //        Make a stop signal for the bus
+  76          //Description £ºDeclaim the stop of data transformation
+  77          //Argument    £ºnone
+  78          //Returns     £ºnone
+  79          //Note        : none
+  80          //*****************************************************************
+  81          */
+  82          void IIC_Stop(void)
+  83          { 
+  84   1        IIC_SDA = 0;
+  85   1        IIC_SCL = 1;  
+  86   1        Time_Delay();
+  87   1        IIC_SDA = 1;
+  88   1        Time_Delay();
+  89   1      }
+  90          /*
+  91          //*****************************************************************
+  92          //        Check the Ack on the data bus
+  93          //Description £ºCheck the Ack signal after data transformation
+  94          //Argument    £ºnone
+  95          //Returns     £ºnone
+  96          //Note        : none
+  97          //*****************************************************************
+  98          */
+  99          bit IIC_Check_Ack(void)
+ 100          {
+ 101   1        uchar errtime=255;  
+ 102   1        IIC_SDA = 1;     // release the data bus for the slaver to generate an acknowledge
+ 103   1        Time_Delay();
+ 104   1        IIC_SCL = 1;
+ 105   1        while((IIC_SDA==1)&&(errtime>0))
+ 106   1          {
+ 107   2            errtime--;
+ 108   2            if(errtime==0)
+ 109   2            {
+ 110   3              IIC_Stop();
+ 111   3              return 1;     
+ 112   3            }     
+ 113   2          }
+ 114   1        Time_Delay();
+ 115   1        IIC_SCL = 0;
+ 116   1        Time_Delay();
+C51 COMPILER V9.54   IIC                                                                   04/02/2016 02:16:15 PAGE 3   
+
+ 117   1        return 0;
+ 118   1      } 
+ 119          /*
+ 120          //*****************************************************************
+ 121          //       Make an Ack on the data bus
+ 122          //Description £ºTo make an Ack on the data bus afer host receive 
+ 123                          date to acknowledge the sender, Ack Yes or No,
+ 124          //Argument    £ºa
+ 125          //Returns     £ºnone
+ 126          //Note        : none
+ 127          //*****************************************************************
+ 128          */
+ 129          void IIC_SendAck(bit a)
+ 130          {
+ 131   1        if(a==1)
+ 132   1        {
+ 133   2         IIC_SDA = 1;
+ 134   2        }
+ 135   1        else 
+ 136   1        {
+ 137   2          IIC_SDA = 0;
+ 138   2        }
+ 139   1        Time_Delay(); 
+ 140   1        IIC_SCL = 1;  
+ 141   1        Time_Delay();
+ 142   1        IIC_SCL = 0;
+ 143   1        Time_Delay(); 
+ 144   1      }
+ 145          /*
+ 146          //*****************************************************************
+ 147          //       To send 8 bits data to the terminal
+ 148          //Description £TTo send 8 bits data to the terminal
+ 149          //Argument    £ºDATA
+ 150          //Returns     £ºnone
+ 151          //Note        : none
+ 152          //*****************************************************************
+ 153          */
+ 154          void IIC_Send_Date(uchar DATA)
+ 155          {
+ 156   1        uchar i,temp;
+ 157   1        temp=DATA;
+ 158   1        //IIC_SCL = 0;
+ 159   1        //Time_Delay();
+ 160   1        for(i=0;i<=7;i++)
+ 161   1          {
+ 162   2            IIC_SDA=(bit)(temp&0x80);
+ 163   2            temp<<=1;
+ 164   2            Time_Delay();
+ 165   2            IIC_SCL = 1;
+ 166   2            Time_Delay();       
+ 167   2            IIC_SCL = 0;
+ 168   2            Time_Delay(); 
+ 169   2          }
+ 170   1      }
+ 171          
+ 172          /*
+ 173          //*****************************************************************
+ 174          //       To receive 8 bits data from the terminal
+ 175          //Description £TTo receive 8 bits data from the terminal
+ 176          //Argument    £ºnone
+ 177          //Returns     £º8bits data
+ 178          //Note        : none
+C51 COMPILER V9.54   IIC                                                                   04/02/2016 02:16:15 PAGE 4   
+
+ 179          //*****************************************************************
+ 180          */
+ 181          
+ 182          uchar IIC_Recieve_Data(void)
+ 183          {
+ 184   1        uchar i,temp;
+ 185   1        IIC_SDA = 1;         //release the bus for the terminal
+ 186   1        //IIC_SCL = 0;
+ 187   1        Time_Delay();
+ 188   1        for(i=0;i<=7;i++)
+ 189   1          {
+ 190   2            IIC_SCL = 1;
+ 191   2            Time_Delay();
+ 192   2            temp<<=1;
+ 193   2            temp|=(uchar)(IIC_SDA);     
+ 194   2            IIC_SCL = 0;
+ 195   2            Time_Delay();       
+ 196   2           }
+ 197   1        return temp;    
+ 198   1      }
+ 199          
+ 200          /*
+ 201          //*****************************************************************
+ 202          //       To send 8 bits data to address in the terminal
+ 203          //Description : To send 8 bits data to address in the terminal
+ 204          //Argument    £ºData  - data ready to send;
+ 205                          Sladd - device address;
+ 206                          Subadd- space address in the device;
+ 207          //Returns     £ºsuccessful or not
+ 208          //Note        : none
+ 209          //*****************************************************************
+ 210          */
+ 211          bit IIC_SendDataToDevice(uchar Data,uchar Sladd_Write,uchar subadd)
+ 212          {
+ 213   1        IIC_Start();
+ 214   1        IIC_Send_Date(Sladd_Write);
+ 215   1        if(IIC_Check_Ack())
+ 216   1          {
+ 217   2            return 0;   
+ 218   2          }
+ 219   1        IIC_Send_Date(subadd);
+ 220   1        if(IIC_Check_Ack())
+ 221   1          {
+ 222   2            return 0;   
+ 223   2          }
+ 224   1        IIC_Send_Date(Data);
+ 225   1        if(IIC_Check_Ack())
+ 226   1          {
+ 227   2            return 0;   
+ 228   2          }
+ 229   1        IIC_Stop();   
+ 230   1        Delay_5ms();                            //This time must be reserved for the device to save the data;
+ 231   1        return 1;
+ 232   1      }
+ 233          
+ 234          /*
+ 235          //*****************************************************************
+ 236          //       To receive 8 bits data from the address in the terminal
+ 237          //Description : To receive 8 bits data from the address in the terminal
+ 238          //Argument    £ºSladd - device address;
+ 239                          Subadd- space address in the device;
+ 240          //Returns     £ºdata
+C51 COMPILER V9.54   IIC                                                                   04/02/2016 02:16:15 PAGE 5   
+
+ 241          //Note        : none
+ 242          //*****************************************************************
+ 243          */
+ 244          bit IIC_ReceiveDataFromDevice(uchar Sladd_Read,uchar subadd)
+ 245          {  
+ 246   1        IIC_Start();
+ 247   1        IIC_Send_Date(Sladd_Read-1);
+ 248   1        if(IIC_Check_Ack())
+ 249   1        {
+ 250   2          return 0; 
+ 251   2        }
+ 252   1        IIC_Send_Date(subadd);
+ 253   1        if(IIC_Check_Ack())
+ 254   1        {
+ 255   2          return 0; 
+ 256   2        }
+ 257   1        IIC_Start();
+ 258   1        IIC_Send_Date(Sladd_Read);
+ 259   1        if(IIC_Check_Ack())
+ 260   1        {
+ 261   2          return 0; 
+ 262   2        }
+ 263   1        IIC_DATA=IIC_Recieve_Data();
+ 264   1        IIC_SendAck(1);
+ 265   1        IIC_Stop(); 
+ 266   1        return 1;
+ 267   1      }
+ 268          
+ 269          
+ 270          
+ 271          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    272    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =      1    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =      1       1
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

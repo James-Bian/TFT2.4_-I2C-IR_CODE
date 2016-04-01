@@ -1,0 +1,91 @@
+C51 COMPILER V9.54   AT24C02                                                               04/02/2016 02:16:15 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE AT24C02
+OBJECT MODULE PLACED IN .\Objects\AT24C02.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE c\AT24C02.c COMPACT OPTIMIZE(8,SPEED) BROWSE INCDIR(.\include) DEBUG OBJ
+                    -ECTEXTEND PRINT(.\Listings\AT24C02.lst) TABS(2) OBJECT(.\Objects\AT24C02.obj)
+
+line level    source
+
+   1          #include"AT24C02.h"
+   2          
+   3          void Time_5ms(void)
+   4          {
+   5   1        unsigned char i, j;
+   6   1      
+   7   1        i = 59;
+   8   1        j = 90;
+   9   1        do
+  10   1        {
+  11   2          while (--j);
+  12   2        } while (--i);
+  13   1      
+  14   1      }
+  15          /*
+  16          //*****************************************************************
+  17          //       Write data to the address in terminal
+  18          //Description : Write data to address terminal
+  19          //Argument    £ºDATA,the data ready to write
+  20                          Address,the internal address for the DATA to write
+  21                          WriteCMD, the Write command of the device
+  22          //Returns     £ºnone
+  23          //Note        : none
+  24          //*****************************************************************
+  25          */
+  26          
+  27          void IIC_Write_Data_To_Address(uchar DATA,uchar Address)
+  28          {
+  29   1        IIC_Start();
+  30   1        IIC_Send_Date(AT24C02_WRITE);
+  31   1        IIC_Check_Ack();
+  32   1        IIC_Send_Date(Address);
+  33   1        IIC_Check_Ack();
+  34   1        IIC_Send_Date(DATA);
+  35   1        IIC_Check_Ack();
+  36   1        IIC_Stop();
+  37   1        Time_5ms();                            //This time must be reserved for the device to save the datas;
+  38   1      }
+  39          
+  40          /*
+  41          //*****************************************************************
+  42          //                  read data from the terminal
+  43          //Description : read data from the terminal
+  44          //Argument    £ºAddress,the internal address for the DATA to read
+  45                          ReadCMD, the read command of the device
+  46          //Returns     £ºdata
+  47          //Note        : none
+  48          //*****************************************************************
+  49          */
+  50          uchar IIC_Read_Data_From_Address(uchar Address)
+  51          {  
+  52   1        uchar temp;
+  53   1        IIC_Start();
+  54   1        IIC_Send_Date(AT24C02_WRITE);
+C51 COMPILER V9.54   AT24C02                                                               04/02/2016 02:16:15 PAGE 2   
+
+  55   1        IIC_Check_Ack();
+  56   1        IIC_Send_Date(Address);
+  57   1        IIC_Check_Ack();
+  58   1        IIC_Start();
+  59   1        IIC_Send_Date(AT24C02_READ);
+  60   1        IIC_Check_Ack();  
+  61   1        temp=IIC_Recieve_Data();
+  62   1        IIC_SendAck(1);
+  63   1        IIC_Stop(); 
+  64   1        return temp;
+  65   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    109    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----       4
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

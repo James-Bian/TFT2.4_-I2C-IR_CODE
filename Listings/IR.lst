@@ -1,0 +1,179 @@
+C51 COMPILER V9.54   IR                                                                    04/02/2016 02:16:15 PAGE 1   
+
+
+C51 COMPILER V9.54, COMPILATION OF MODULE IR
+OBJECT MODULE PLACED IN .\Objects\IR.obj
+COMPILER INVOKED BY: C:\Keil_v5\C51\BIN\C51.EXE c\IR.c COMPACT OPTIMIZE(8,SPEED) BROWSE INCDIR(.\include) DEBUG OBJECTEX
+                    -TEND PRINT(.\Listings\IR.lst) TABS(2) OBJECT(.\Objects\IR.obj)
+
+line level    source
+
+   1          #include "IR.h" 
+   2          
+   3          /*******************************************************************************
+   4          * 函数名         : DelayMs()
+   5          * 函数功能       : 延时
+   6          * 输入           : x
+   7          * 输出           : 无
+   8          *******************************************************************************/
+   9           
+  10          unsigned char IrValue[6];   //用来存放读取到的红外值
+  11          unsigned char IR_EVENT=0;
+  12          unsigned char IR_Value_Temp=0;
+  13          
+  14          void Delay1ms()   //1ms延迟
+  15          {
+  16   1        unsigned char i, j;
+  17   1      
+  18   1        i = 2;
+  19   1        j = 239;
+  20   1        do
+  21   1        {
+  22   2          while (--j);
+  23   2        } while (--i);
+  24   1      }
+  25          
+  26          
+  27          void Delay140us()   //0.14ms时间延迟；0.56ms时间内采集3-4次，准确判断逻辑1或者0
+  28          {
+  29   1        unsigned char i;
+  30   1      
+  31   1        _nop_();
+  32   1        i = 67;
+  33   1        while (--i);
+  34   1      }
+  35          
+  36          
+  37          /*******************************************************************************
+  38          * 函数名         : IrInit()
+  39          * 函数功能       : 初始化红外线接收
+  40          * 输入           : 无
+  41          * 输出           : 无
+  42          *******************************************************************************/
+  43          
+  44          void IrInit()    //端口INT0被占用，只能使用T2EX引脚，注意中断号是5，关闭中断有
+  45                           //两个开关ET2和EXEN2,自动重装模式和波特率发生器模式均可；
+  46          {
+  47   1       ET2=1;    //定时器2中断使能
+  48   1       EXEN2=1;  //允许外部中断；
+  49   1       //RCLK=1;   //输入波特率设置
+  50   1       PT2=1;    //设置优先级，要求红外优先级相对比较高；
+  51   1       TF2=0;
+  52   1       TH2=0;      
+  53   1       TL2=0;
+  54   1       RCAP2L = 0;
+C51 COMPILER V9.54   IR                                                                    04/02/2016 02:16:15 PAGE 2   
+
+  55   1       RCAP2H = 0;
+  56   1       //TR2=1;     //启用定时器
+  57   1       EA=1;  //打开总中断
+  58   1       IRIN=1;//初始化端口，准双向，先设置1，利于正确读取IR输入状态；
+  59   1      }
+  60          /*******************************************************************************
+  61          * 函数名         : ReadIr()
+  62          * 函数功能       : 读取红外数值的中断函数
+  63          * 输入           : 无
+  64          * 输出           : 无
+  65          *******************************************************************************/
+  66          
+  67          
+  68          void ReadIr() interrupt 5  
+  69          {
+  70   1        unsigned char j,k,Positive_Time;
+  71   1        unsigned int err;
+  72   1        Positive_Time=0;
+  73   1        
+  74   1        TF2=0;                     //清零中断标致;   
+  75   1        EXF2=0;                    //清零中断标致；
+  76   1        EXEN2=0;                   //关闭中断
+  77   1        ET2=0;                     //关闭中断
+  78   1        
+  79   1        Delay1ms();               //延迟1ms排除干扰； 
+  80   1      
+  81   1        //first step，确认头码正确性；头码正确再继续解码；
+  82   1      
+  83   1        if(IRIN==0)   //确认是否真的接收到正确的信号
+  84   1        { 
+  85   2          err=100;    
+  86   2          while((IRIN==0)&&(err>0))    //等待8ms低电平，超时退出
+  87   2           {
+  88   3            err--;
+  89   3            Delay140us();
+  90   3           }
+  91   2          if(err==0)                 
+  92   2           {
+  93   3            EXEN2=1;
+  94   3            ET2=1;
+  95   3          //printf("低电平超时退出\r\n"); 
+  96   3            return;      
+  97   3           }
+  98   2           
+  99   2          err=50;
+ 100   2          while((IRIN==1)&&(err>0))    //等4.5ms高电平，超时退出
+ 101   2           {
+ 102   3            err--;
+ 103   3            Delay140us();
+ 104   3           }
+ 105   2          if(err>=30||err==0)          //高电平时间过短2.5ms，认为是重复码，退出；
+ 106   2           {
+ 107   3            EXEN2=1;
+ 108   3            ET2=1;  
+ 109   3          //  printf("重复码或者超时退出\r\n");   
+ 110   3            return;      
+ 111   3           }       
+ 112   2          
+ 113   2          //printf("接收到正确头码\r\n");   //调试头码使用，头码正确后，必须注释掉，否则因为发送信息而造成延迟而错
+             -过头码后的波形
+ 114   2                                            //并影响按键正确解码；
+ 115   2           
+C51 COMPILER V9.54   IR                                                                    04/02/2016 02:16:15 PAGE 3   
+
+ 116   2          //NEC码值，包括16位的客户码（8位原码和反码），和一个8位的遥控码和遥控反码；LSB先发；
+ 117   2            for(k=0;k<4;k++)               //共有4组数据
+ 118   2            {       
+ 119   3              for(j=0;j<8;j++)             //接收一组数据
+ 120   3              {
+ 121   4                while(!IRIN);              //等待信号前面的560us低电平过去
+ 122   4                err=20;
+ 123   4                while((IRIN==1)&&(err>0))  //计算高电平的时间长度，逻辑1。
+ 124   4                {
+ 125   5                  Delay140us();            //0.14ms
+ 126   5                  Positive_Time++;
+ 127   5                  err--;            
+ 128   5                }
+ 129   4                if(err==0)                 //逻辑1超时退出；
+ 130   4                  {
+ 131   5                    EXEN2=1;
+ 132   5                    ET2=1;
+ 133   5                    return;
+ 134   5                  }
+ 135   4                IrValue[k]>>=1;           //右移一位，高位补零，默认判定逻辑0，若大于0.56ms，是逻辑1，则置1操作；
+ 136   4                if(Positive_Time>=8)      
+ 137   4                {
+ 138   5                  IrValue[k]|=0x80;
+ 139   5                }
+ 140   4                Positive_Time=0;          //用完时间要重新赋值              
+ 141   4              }
+ 142   3            }     
+ 143   2            IR_EVENT=1;                   //接收完成，给IR事件置1，并且给缓冲赋IR遥控键值；
+ 144   2            IR_Value_Temp=IrValue[2];
+ 145   2          } 
+ 146   1        
+ 147   1        EXEN2=1;
+ 148   1        ET2=1;  
+ 149   1        return;
+ 150   1      } 
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    283    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =      8       3
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
