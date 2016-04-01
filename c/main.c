@@ -11,6 +11,7 @@
 #include "AT24C02.h"
 
 sbit Input_P10=P1^0;
+// test;
 
 void main(void)
 {   
@@ -25,11 +26,11 @@ void main(void)
 	  Ds18b20ReadTemp();
 	  Time0_Init();
 	
-	  printf("TFT�������Գ���\r\n");
+	  printf("TFT彩屏测试程序\r\n");
 	
    	TFT_ClearScreen(~BLACK);
 	
-    GUI_Write32CnChar(0, 0, "��С��", ~CYAN, ~0x0000);	
+    GUI_Write32CnChar(0, 0, "吴小慧", ~CYAN, ~0x0000);	
 		GUI_WriteASCII (0, 30 ,"RTC Reads:" , ~CYAN, ~BLACK);
 		Ds1302ReadTime();	
 		GUI_TimeDisplay(0, 54 , ~CYAN, ~BLACK);		
@@ -47,7 +48,7 @@ void main(void)
 				RTC_Timer_OK=0;
 				Ds1302ReadTime();	
 			  GUI_TimeDisplay(0, 54 , ~CYAN, ~BLACK);			
-			  printf("��ȡRTCʱ��\r\n");
+			  printf("读取RTC时间\r\n");
 				ET0=1;			 
 				
 			}
@@ -57,7 +58,7 @@ void main(void)
 				ET0=0;
 			  GUI_TEMPERATUER_DISPLAY_16X24(0, 102, Ds18b20ReadTemp(), ~CYAN, ~BLACK);	
 				ET0=1;
-			  printf("��ȡDS18B20�������¶�\r\n");				
+			  printf("读取DS18B20传感器温度\r\n");				
 			 }
 		  if(IR_EVENT==1)
 			 {
@@ -65,7 +66,7 @@ void main(void)
 				GUI_IR_VALUE_DISPLAY_16X24(144, 126, IrValue[1],  ~YELLOW, ~BLACK);	
 				GUI_IR_VALUE_DISPLAY_16X24(176, 126, IrValue[0],  ~YELLOW, ~BLACK);	
 				GUI_IR_VALUE_DISPLAY_16X24(208, 126, IrValue[2],  ~YELLOW, ~BLACK);	
-				printf("���յ��µĺ���ң�ذ�����\r\n");	
+				printf("接收到新的红外遥控按键码\r\n");	
 			 }
 			
 			if(IrValue[2]==0x07)
@@ -82,8 +83,8 @@ void main(void)
 			
 			if(TOUCH_PEN==0)
 		  	{
-				//--�����������ʾ����ƫ�ƣ����Ը�����ʾADֵ--//
-				//--�������湫ʽ�������ֵ--//
+				//--如果触摸跟显示发生偏移，可以根据显示AD值--//
+				//--调整下面公式里面的数值--//
 				TOUCH_XPT_ReadXY();
 				x = xpt_xy.x;
 				x = (x - 176) * 240 / 3676 ; 
