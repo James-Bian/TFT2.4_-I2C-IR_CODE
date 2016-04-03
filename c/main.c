@@ -1,4 +1,4 @@
-#include <REG52.H>
+﻿#include <REG52.H>
 #include "lcd_drive.h"
 #include "gui.h"
 #include "DS1302.h"
@@ -13,6 +13,7 @@
 sbit Input_P10=P1^0;
 // test;
 // fetch testing;
+// add new owersdf
 
 void main(void)
 {   
