@@ -13,11 +13,10 @@
 sbit Input_P10=P1^0;
 // test;
 // fetch testing;
-<<<<<<< HEAD
 // add new owersdf
-=======
+
 // another changes
->>>>>>> 98e64b0334ef33c6b03f10409d9fa9b1de08526f
+
 
 void main(void)
 {   
