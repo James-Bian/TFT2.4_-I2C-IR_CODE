@@ -12,7 +12,7 @@
 
 sbit Input_P10=P1^0;
 // test;
-
+// merge
 
 void main(void)
 {   
